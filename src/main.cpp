@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <string>
 #include "mmu.h"
 #include "pagetable.h"
@@ -28,6 +29,78 @@ int main(int argc, char **argv)
     while (command != "exit") {
         // Handle command
         // TODO: implement this!
+
+        //splits user input at 'spaces' into an array
+        std::istringstream buf(command);
+        std::istream_iterator<std::string> beg(buf), end;
+        std::vector<std::string> tokens(beg, end);
+
+        //prints out the token array
+        /*for(auto& s: tokens)
+        {
+            std::cout << '"' << s << '"' << '\n';
+        }*/
+
+        //error checking
+        if(tokens.size() == 0){}
+        else if (tokens[0] == "create")
+        {
+            if(tokens.size() > 3)
+            {
+                std::cout << "Error with command 'create': Too many arguments" << std::endl;
+            }
+            else if(tokens.size() == 1)
+            {
+                std::cout << "Error with command 'create': Not enough arguments" << std::endl;
+            }
+        }
+        else if (tokens[0] == "allocate")
+        {
+            if(tokens.size() > 4)
+            {
+                std::cout << "Error with command 'allocate': Too many arguments" << std::endl;
+            }
+            else if(tokens.size() == 1)
+            {
+                std::cout << "Error with command 'allocate': Not enough arguments" << std::endl;
+            }
+        }
+        else if (tokens[0] == "set")
+        {
+            if(tokens.size() == 1)
+            {
+                std::cout << "Error with command 'set': Not enough arguments" << std::endl;
+            }
+        }
+        else if (tokens[0] == "free")
+        {
+            if(tokens.size() > 3)
+            {
+                std::cout << "Error with command 'free': Too many arguments" << std::endl;
+            }
+            else if(tokens.size() == 1)
+            {
+                std::cout << "Error with command 'free': Not enough arguments" << std::endl;
+            }
+        }
+        else if (tokens[0] == "terminate")
+        {
+            if(tokens.size() == 1)
+            {
+                std::cout << "Error with command 'terminate': Not enough arguments" << std::endl;
+            }
+        }
+        else if (tokens[0] == "print")
+        {
+            if(tokens.size() == 1)
+            {
+                std::cout << "Error with command 'print': Not enough arguments" << std::endl;
+            }
+        }
+        else
+        {
+              std::cout << "Command '" << tokens[0] << "' not found" << std::endl;
+        }
 
         // Get next command
         std::cout << "> ";
