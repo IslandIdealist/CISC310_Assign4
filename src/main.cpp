@@ -3,15 +3,36 @@
 #include <string>
 #include "mmu.h"
 #include "pagetable.h"
+#include <math.h>
+#include <stdio.h> 
 
 void printStartMessage(int page_size);
 
 int main(int argc, char **argv)
 {
     // Ensure user specified page size as a command line parameter
+
     if (argc < 2)
     {
         fprintf(stderr, "Error: you must specify the page size\n");
+        return 1;
+    }
+    else if ( (std::stoi(argv[1]) >= 1024) && (std::stoi(argv[1]) <= 32768) ) //error check to make sure input is a power of 2
+    {
+        int argument = std::stoi(argv[1]);
+        while( (argument%2) == 0)
+        {
+            argument = argument/2;
+        }
+        if(argument != 1 || argument == 0)
+        {
+            fprintf(stderr, "Error: the page size must be a power of 2\n");
+            return 1;
+        }
+    }
+    else if ( (std::stoi(argv[1]) < 1024) || (std::stoi(argv[1]) > 32768) ) //error check to make sure input is between 1024 and 32768
+    {
+        fprintf(stderr, "Error: the page size must be a power of 2 between 1024 and 32768\n");
         return 1;
     }
 
@@ -53,6 +74,9 @@ int main(int argc, char **argv)
             {
                 std::cout << "Error with command 'create': Not enough arguments" << std::endl;
             }
+
+           // Mmu::createProcess.var->name = '<TEXT>';
+           // Mmu::createProcess.var->size = args[2];
         }
         else if (args[0] == "allocate")
         {
