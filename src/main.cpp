@@ -33,75 +33,75 @@ int main(int argc, char **argv)
         //splits user input at 'spaces' into an array
         std::istringstream buf(command);
         std::istream_iterator<std::string> beg(buf), end;
-        std::vector<std::string> tokens(beg, end);
+        std::vector<std::string> args(beg, end);
 
         //prints out the token array
-        /*for(auto& s: tokens)
+        /*for(auto& s: args)
         {
             std::cout << '"' << s << '"' << '\n';
         }*/
 
         //error checking
-        if(tokens.size() == 0){}
-        else if (tokens[0] == "create")
+        if(args.size() == 0){}
+        else if (args[0] == "create")
         {
-            if(tokens.size() > 3)
+            if(args.size() > 3)
             {
                 std::cout << "Error with command 'create': Too many arguments" << std::endl;
             }
-            else if(tokens.size() == 1)
+            else if(args.size() == 1)
             {
                 std::cout << "Error with command 'create': Not enough arguments" << std::endl;
             }
         }
-        else if (tokens[0] == "allocate")
+        else if (args[0] == "allocate")
         {
-            if(tokens.size() > 4)
+            if(args.size() > 4)
             {
                 std::cout << "Error with command 'allocate': Too many arguments" << std::endl;
             }
-            else if(tokens.size() == 1)
+            else if(args.size() == 1)
             {
                 std::cout << "Error with command 'allocate': Not enough arguments" << std::endl;
             }
         }
-        else if (tokens[0] == "set")
+        else if (args[0] == "set")
         {
-            if(tokens.size() == 1)
+            if(args.size() == 1)
             {
                 std::cout << "Error with command 'set': Not enough arguments" << std::endl;
             }
         }
-        else if (tokens[0] == "free")
+        else if (args[0] == "free")
         {
-            if(tokens.size() > 3)
+            if(args.size() > 3)
             {
                 std::cout << "Error with command 'free': Too many arguments" << std::endl;
             }
-            else if(tokens.size() == 1)
+            else if(args.size() == 1)
             {
                 std::cout << "Error with command 'free': Not enough arguments" << std::endl;
             }
         }
-        else if (tokens[0] == "terminate")
+        else if (args[0] == "terminate")
         {
-            if(tokens.size() == 1)
+            if(args.size() == 1)
             {
                 std::cout << "Error with command 'terminate': Not enough arguments" << std::endl;
             }
         }
-        else if (tokens[0] == "print")
+        else if (args[0] == "print")
         {
-            if(tokens.size() == 1)
+            if(args.size() == 1)
             {
                 std::cout << "Error with command 'print': Not enough arguments" << std::endl;
             }
         }
         else
         {
-              std::cout << "Command '" << tokens[0] << "' not found" << std::endl;
+              std::cout << "Command '" << args[0] << "' not found" << std::endl;
         }
-
+        
         // Get next command
         std::cout << "> ";
         std::getline (std::cin, command);
