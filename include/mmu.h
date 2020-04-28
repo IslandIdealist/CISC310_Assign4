@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "pagetable.h"
 
 typedef struct Variable {
     std::string name;
@@ -13,6 +14,8 @@ typedef struct Variable {
 
 typedef struct Process {
     uint32_t pid;
+    int process_virtual_address;
+    
     std::vector<Variable*> variables;
 } Process;
 
@@ -27,6 +30,9 @@ public:
     ~Mmu();
 
     uint32_t createProcess();
+    Process* getProcess();
+    std::vector<Process*> getProcessesVector();
+    uint32_t createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *pageTable);
     void print();
 };
 

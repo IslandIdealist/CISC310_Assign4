@@ -1,4 +1,6 @@
 #include "pagetable.h"
+#include <math.h>
+#include <sstream>
 
 PageTable::PageTable(int page_size)
 {
@@ -23,9 +25,12 @@ void PageTable::addEntry(uint32_t pid, int page_number)
 int PageTable::getPhysicalAddress(uint32_t pid, int virtual_address)
 {
     // Convert virtual address to page_number and page_offset
-    // TODO: implement this!
-    int page_number = 0;
-    int page_offset = 0;
+
+    int page_number = virtual_address >> _page_offset_bit;
+    int page_offset = virtual_address & ( (int)pow(2, _page_offset_bit) - 1 );
+
+    std::cout << "Page number: " << page_number << std::endl;
+	std::cout << "Page offset: " << page_offset << std::endl;
 
     // Combination of pid and page number act as the key to look up frame number
     std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);

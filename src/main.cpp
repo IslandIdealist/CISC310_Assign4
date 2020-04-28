@@ -43,6 +43,12 @@ int main(int argc, char **argv)
     // Create physical 'memory'
     uint8_t *memory = new uint8_t[67108864]; // 64 MB (64 * 1024 * 1024)
 
+    //initialize MMU and Page Table
+    Mmu *mmu = new Mmu(page_size);
+    PageTable *page_table = new PageTable(page_size);
+    int pid;
+    int number_of_pages;
+
     // Prompt loop
     std::string command;
     std::cout << "> ";
@@ -63,20 +69,22 @@ int main(int argc, char **argv)
         }*/
 
         //error checking
-        if(args.size() == 0){}
+        if(args.size() == 0);
         else if (args[0] == "create")
         {
             if(args.size() > 3)
             {
                 std::cout << "Error with command 'create': Too many arguments" << std::endl;
             }
-            else if(args.size() == 1)
+            else if(args.size() == 1 || args.size() == 2)
             {
                 std::cout << "Error with command 'create': Not enough arguments" << std::endl;
             }
+            else
+            {
+                std::cout << mmu->createNewProcess( std::stoi(args[1]), std::stoi(args[2]), page_table) << std::endl;
+            }
 
-           // Mmu::createProcess.var->name = '<TEXT>';
-           // Mmu::createProcess.var->size = args[2];
         }
         else if (args[0] == "allocate")
         {
@@ -120,6 +128,20 @@ int main(int argc, char **argv)
             {
                 std::cout << "Error with command 'print': Not enough arguments" << std::endl;
             }
+            else if(args.size() > 2)
+            {
+                std::cout << "Error with command 'print': Not enough arguments" << std::endl;
+            }
+            else if(args[1] == "mmu")
+            {
+                mmu->print();
+            }
+            else if(args[1] == "page")
+            {
+                page_table->print();
+            }
+
+
         }
         else
         {
