@@ -33,6 +33,7 @@ public:
     Process* getProcess();
     std::vector<Process*> getProcessesVector();
     uint32_t createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *pageTable);
+    void allocate( std::string name, std::string type, uint32_t quantity );   
     void print();
 };
 
