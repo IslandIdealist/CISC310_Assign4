@@ -39,6 +39,8 @@ std::vector<Process*> Mmu::getProcessesVector()
 }
 
 
+
+
 uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *pageTable)
 {
     int p, v;
@@ -68,7 +70,6 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
 
     if( found )
 	{
-
 		var->name = "<TEXT>";
 		var->virtual_address = getProcess()->process_virtual_address;
 		var->size = textSize;
@@ -82,6 +83,7 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
 		getProcess()->variables.push_back(globals);
 
 		getProcess()->process_virtual_address = getProcess()->process_virtual_address + globals->size;
+
 
 		Variable *stack = new Variable();
 		stack->name = "<STACK>";
@@ -103,6 +105,36 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
 
 	return process;
 }
+
+void Mmu::allocate( std::string name, std::string type, uint32_t quantity){
+
+    //allocate space needed for any specificed variables. 
+    Variable *var = new Variable();
+        
+    if( type.compare("int") == 0 ){
+        var->name = name;
+        var->virtual_address = getProcess()->process_virtual_address;
+        var->size = 4 * quantity;
+    }
+    else if( type.compare("short") == 0 ){
+        var->name = name;
+        var->virtual_address = getProcess()->process_virtual_address;
+        var->size = 2 * quantity;
+    }
+    else if( type.compare( "char" ) == 0 ){
+        var->name = name;
+        var->virtual_address = getProcess()->process_virtual_address;
+        var->size = 2;
+    }
+    else if( type.compare("long" ) == 0  || type.compare("double") == 0 ){
+        var->name = name;
+        var->virtual_address = getProcess()->process_virtual_address;
+        var->size = 8 * quantity;
+    }
+	getProcess()->variables.push_back(var);
+
+}
+
 
 void Mmu::print()
 {

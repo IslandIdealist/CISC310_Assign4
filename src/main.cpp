@@ -4,7 +4,9 @@
 #include "mmu.h"
 #include "pagetable.h"
 #include <math.h>
+#include <iterator>
 #include <stdio.h> 
+
 
 void printStartMessage(int page_size);
 
@@ -96,6 +98,13 @@ int main(int argc, char **argv)
             {
                 std::cout << "Error with command 'allocate': Not enough arguments" << std::endl;
             }
+
+            int pid = std::stoi(args[1]); 
+            std::string name = args[2];  
+            std::string type = args[3]; 
+            int quantity = std::stoi( args[4]);
+            mmu->allocate( name, type, quantity );      
+
         }
         else if (args[0] == "set")
         {
