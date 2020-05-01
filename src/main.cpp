@@ -103,7 +103,7 @@ int main(int argc, char **argv)
             std::string name = args[2];  
             std::string type = args[3]; 
             int quantity = std::stoi( args[4]);
-            mmu->allocate( name, type, quantity );      
+            mmu->allocate(pid, name, type, quantity );      
 
         }
         else if (args[0] == "set")
