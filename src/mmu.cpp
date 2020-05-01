@@ -110,29 +110,33 @@ void Mmu::allocate( std::string name, std::string type, uint32_t quantity){
 
     //allocate space needed for any specificed variables. 
     Variable *var = new Variable();
+    int address = getProcess()->process_virtual_address;
         
     if( type.compare("int") == 0 ){
         var->name = name;
-        var->virtual_address = getProcess()->process_virtual_address;
+        var->virtual_address = address; 
         var->size = 4 * quantity;
+        getProcess()->process_virtual_address = address + var->size; 
     }
     else if( type.compare("short") == 0 ){
         var->name = name;
-        var->virtual_address = getProcess()->process_virtual_address;
+        var->virtual_address = address; 
         var->size = 2 * quantity;
+        getProcess()->process_virtual_address = address + var->size; 
     }
     else if( type.compare( "char" ) == 0 ){
         var->name = name;
-        var->virtual_address = getProcess()->process_virtual_address;
+        var->virtual_address = address; 
         var->size = 2;
+        getProcess()->process_virtual_address = address + var->size; 
     }
     else if( type.compare("long" ) == 0  || type.compare("double") == 0 ){
         var->name = name;
-        var->virtual_address = getProcess()->process_virtual_address;
+        var->virtual_address = address; 
         var->size = 8 * quantity;
+        getProcess()->process_virtual_address = address + var->size; 
     }
 	getProcess()->variables.push_back(var);
-
 }
 
 
