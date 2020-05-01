@@ -55,7 +55,8 @@ int main(int argc, char **argv)
     std::string command;
     std::cout << "> ";
     std::getline (std::cin, command);
-    while (command != "exit") {
+    while (command != "exit")
+    {
         // Handle command
         // TODO: implement this!
 
@@ -64,15 +65,10 @@ int main(int argc, char **argv)
         std::istream_iterator<std::string> beg(buf), end;
         std::vector<std::string> args(beg, end);
 
-        //prints out the token array
-        /*for(auto& s: args)
-        {
-            std::cout << '"' << s << '"' << '\n';
-        }*/
-
         //error checking
-        if(args.size() == 0);
-        else if( args[0] == "exit"){
+        if(args.size() == 0){}
+        else if( args[0] == "exit")
+        {
             exit(0);
         }
         else if (args[0] == "create")
@@ -93,7 +89,7 @@ int main(int argc, char **argv)
         }
         else if (args[0] == "allocate")
         {
-            if(args.size() > 4)
+            if(args.size() > 5)
             {
                 std::cout << "Error with command 'allocate': Too many arguments" << std::endl;
             }

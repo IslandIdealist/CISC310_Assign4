@@ -1,5 +1,6 @@
 #include "mmu.h"
 #include <sstream>
+#include <math.h>
 
 Mmu::Mmu(int memory_size)
 {
@@ -81,50 +82,50 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
 
     if( found )
 	{
-		var->name = "<TEXT>";
-		var->virtual_address = getFirstProcess()->process_virtual_address;
-		var->size = textSize;
 
-		getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + textSize;
+        var->name = "<TEXT>";
+        var->virtual_address = getFirstProcess()->process_virtual_address;
+        var->size = textSize;
 
-		Variable *globals = new Variable();
-		globals->name = "<GLOBALS>";
-    globals->virtual_address = getFirstProcess()->process_virtual_address;
-    globals->size = dataSize;
-		getFirstProcess()->variables.push_back(globals);
+        getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + textSize;
 
-		getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + globals->size;
+        Variable *globals = new Variable();
+        globals->name = "<GLOBALS>";
+        globals->virtual_address = getFirstProcess()->process_virtual_address;
+        globals->size = dataSize;
+        getFirstProcess()->variables.push_back(globals);
 
+        getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + globals->size;
 
-		Variable *stack = new Variable();
-		stack->name = "<STACK>";
-    stack->virtual_address = getFirstProcess()->process_virtual_address;
-    stack->size = 65536;
-		getFirstProcess()->variables.push_back(stack);
+        Variable *stack = new Variable();
+        stack->name = "<STACK>";
+        stack->virtual_address = getFirstProcess()->process_virtual_address;
+        stack->size = 65536;
+        getFirstProcess()->variables.push_back(stack);
 
-		getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + stack->size;
+        getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + stack->size;
 
-    Variable *freeSpace = new Variable();
-    freeSpace->name = "<FREE_SPACE>";
+        Variable *freeSpace = new Variable();
+        freeSpace->name = "<FREE_SPACE>";
 
-    freeSpace->virtual_address = 0;
-    freeSpace->size = _max_size - getFirstProcess()->process_virtual_address;
-		getFirstProcess()->variables.push_back(freeSpace);
+        freeSpace->virtual_address = 0;
+        freeSpace->size = _max_size - getFirstProcess()->process_virtual_address;
+        getFirstProcess()->variables.push_back(freeSpace);
 
-    // ** create the page table **
-    int numberOfPages = ( textSize + dataSize + max ) / ( pageTable->pageSize() );
+        // ** create the page table **
+        int numberOfPages = ( textSize + dataSize + max ) / ( pageTable->pageSize() );
 
-    for(int i = 0; i < numberOfPages; i++) 
-    {
-        pageTable->addEntry(getProcess()->pid, i);
+        for(int i = 0; i < numberOfPages; i++) 
+        {
+            pageTable->addEntry(getFirstProcess()->pid, i);
+        }
     }
-		
-	}
 
 	return process;
 }
 
-void Mmu::allocate( int pid, std::string name, std::string type, uint32_t quantity){
+void Mmu::allocate( int pid, std::string name, std::string type, uint32_t quantity)
+{
 
     //allocate space needed for any specificed variables. 
     Variable *var = new Variable();
@@ -160,14 +161,14 @@ void Mmu::allocate( int pid, std::string name, std::string type, uint32_t quanti
 }
 
 
-void Mmu::set( int pid, std::string name, std::vector<std::string>* args ){
+void Mmu::set( int pid, std::string name, std::vector<std::string>* args )
+{
 
 }
 
 
-void Mmu::free(int pid, std::string name){
-
-
+void Mmu::free(int pid, std::string name)
+{
     //find the variable to free. 
     Process* p = getProcess( pid ); 
     std::vector<Variable*> vars = p->variables; 
@@ -184,7 +185,7 @@ void Mmu::free(int pid, std::string name){
     free->size = prev->size;
     combineFrees( pid );
     
-    // check if need free something from page? 
+    // check if need free something from page?
 }
 
 
@@ -193,7 +194,8 @@ void Mmu::free(int pid, std::string name){
  * Combines any free space variables that are next
  * to each other within a process. 
  */
-void Mmu::combineFrees(int pid ){
+void Mmu::combineFrees(int pid )
+{
 
     Process* p = getProcess( pid ); 
     std::vector<Variable*> vars = p->variables; 
@@ -224,10 +226,7 @@ void Mmu::combineFrees(int pid ){
           }
        }
     }
-
 }
-
-
 
 
 void Mmu::print()
