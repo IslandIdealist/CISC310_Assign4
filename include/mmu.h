@@ -30,11 +30,13 @@ public:
     ~Mmu();
 
     uint32_t createProcess();
-    Process* getProcess();
+    Process* getProcess(uint32_t pid);
+    Process* getFirstProcess();
     std::vector<Process*> getProcessesVector();
     uint32_t createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *pageTable);
-    void allocate( std::string name, std::string type, uint32_t quantity );   
+    void allocate( int pid, std::string name, std::string type, uint32_t quantity );   
     void print();
+    void set(); 
 };
 
 #endif // __MMU_H_

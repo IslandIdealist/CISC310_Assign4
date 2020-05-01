@@ -28,7 +28,18 @@ uint32_t Mmu::createProcess()
     return proc->pid;
 }
 
-Process* Mmu::getProcess()
+Process* Mmu::getProcess( uint32_t pid )
+{
+    std::vector<Process*> vec = getProcessesVector();
+    for( int i = 0; i < vec.size(); i++){
+       Process* p = vec[i];
+       if( p->pid == pid ){
+           return p; 
+       }
+   }
+}
+
+Process* Mmu::getFirstProcess() 
 {
     return _processes.front();
 }
@@ -37,8 +48,6 @@ std::vector<Process*> Mmu::getProcessesVector()
 {
     return _processes;
 }
-
-
 
 
 uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *pageTable)
@@ -71,72 +80,77 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
     if( found )
 	{
 		var->name = "<TEXT>";
-		var->virtual_address = getProcess()->process_virtual_address;
+		var->virtual_address = getFirstProcess()->process_virtual_address;
 		var->size = textSize;
 
-		getProcess()->process_virtual_address = getProcess()->process_virtual_address + textSize;
+		getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + textSize;
 
 		Variable *globals = new Variable();
 		globals->name = "<GLOBALS>";
-    	globals->virtual_address = getProcess()->process_virtual_address;
+    	globals->virtual_address = getFirstProcess()->process_virtual_address;
     	globals->size = dataSize;
-		getProcess()->variables.push_back(globals);
+		getFirstProcess()->variables.push_back(globals);
 
-		getProcess()->process_virtual_address = getProcess()->process_virtual_address + globals->size;
+		getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + globals->size;
 
 
 		Variable *stack = new Variable();
 		stack->name = "<STACK>";
-    	stack->virtual_address = getProcess()->process_virtual_address;
+    	stack->virtual_address = getFirstProcess()->process_virtual_address;
     	stack->size = 65536;
-		getProcess()->variables.push_back(stack);
+		getFirstProcess()->variables.push_back(stack);
 
-		getProcess()->process_virtual_address = getProcess()->process_virtual_address + stack->size;
+		getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + stack->size;
 
     	Variable *freeSpace = new Variable();
     	freeSpace->name = "<FREE_SPACE>";
     	freeSpace->virtual_address = 0;
-    	freeSpace->size = _max_size - getProcess()->process_virtual_address;
-		getProcess()->variables.push_back(freeSpace);
+    	freeSpace->size = _max_size - getFirstProcess()->process_virtual_address;
+		getFirstProcess()->variables.push_back(freeSpace);
 
 		//Create page table ***
-		
 	}
 
 	return process;
 }
 
-void Mmu::allocate( std::string name, std::string type, uint32_t quantity){
+void Mmu::allocate( int pid, std::string name, std::string type, uint32_t quantity){
 
     //allocate space needed for any specificed variables. 
     Variable *var = new Variable();
-    int address = getProcess()->process_virtual_address;
+
+    int address = getProcess(pid)->process_virtual_address;
         
     if( type.compare("int") == 0 ){
         var->name = name;
         var->virtual_address = address; 
         var->size = 4 * quantity;
-        getProcess()->process_virtual_address = address + var->size; 
+        getProcess(pid)->process_virtual_address = address + var->size; 
     }
     else if( type.compare("short") == 0 ){
         var->name = name;
         var->virtual_address = address; 
         var->size = 2 * quantity;
-        getProcess()->process_virtual_address = address + var->size; 
+        getProcess(pid)->process_virtual_address = address + var->size; 
     }
     else if( type.compare( "char" ) == 0 ){
         var->name = name;
         var->virtual_address = address; 
         var->size = 2;
-        getProcess()->process_virtual_address = address + var->size; 
+        getProcess(pid)->process_virtual_address = address + var->size; 
     }
     else if( type.compare("long" ) == 0  || type.compare("double") == 0 ){
         var->name = name;
         var->virtual_address = address; 
         var->size = 8 * quantity;
-        getProcess()->process_virtual_address = address + var->size; 
+        getProcess(pid)->process_virtual_address = address + var->size; 
     }
-	getProcess()->variables.push_back(var);
+	getProcess(pid)->variables.push_back(var);
+}
+
+
+void Mmu::set( ){
+
 }
 
 
