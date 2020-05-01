@@ -24,17 +24,24 @@ private:
     uint32_t _next_pid;
     int _max_size;
     std::vector<Process*> _processes;
+    void combineFrees(int pid);
 
 public:
     Mmu(int memory_size);
     ~Mmu();
 
     uint32_t createProcess();
-    Process* getProcess();
+    Process* getProcess(uint32_t pid);
+    Process* getFirstProcess();
     std::vector<Process*> getProcessesVector();
     uint32_t createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *pageTable);
-    void allocate( std::string name, std::string type, uint32_t quantity );   
+    void allocate( int pid, std::string name, std::string type, uint32_t quantity );   
     void print();
+    void set( int pid, std::string name, std::vector<std::string>* args ){
+    void free(int pid, std::string name); 
+
 };
+
+
 
 #endif // __MMU_H_
