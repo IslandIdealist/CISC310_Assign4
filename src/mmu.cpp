@@ -38,13 +38,11 @@ std::vector<Process*> Mmu::getProcessesVector()
     return _processes;
 }
 
-
-
-
 uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *pageTable)
 {
     int p, v;
     int pageNumber;
+    int max = 65536;
 	bool found = false;
     Variable *var = new Variable();
 	uint32_t process = createProcess();
@@ -71,35 +69,41 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
     if( found )
 	{
 		var->name = "<TEXT>";
+
 		var->virtual_address = getProcess()->process_virtual_address;
 		var->size = textSize;
-
-		getProcess()->process_virtual_address = getProcess()->process_virtual_address + textSize;
+        getProcess()->process_virtual_address = getProcess()->process_virtual_address + textSize;
 
 		Variable *globals = new Variable();
 		globals->name = "<GLOBALS>";
+
     	globals->virtual_address = getProcess()->process_virtual_address;
     	globals->size = dataSize;
 		getProcess()->variables.push_back(globals);
-
-		getProcess()->process_virtual_address = getProcess()->process_virtual_address + globals->size;
-
+        getProcess()->process_virtual_address = getProcess()->process_virtual_address + globals->size;
 
 		Variable *stack = new Variable();
 		stack->name = "<STACK>";
+
     	stack->virtual_address = getProcess()->process_virtual_address;
     	stack->size = 65536;
 		getProcess()->variables.push_back(stack);
-
-		getProcess()->process_virtual_address = getProcess()->process_virtual_address + stack->size;
+        getProcess()->process_virtual_address = getProcess()->process_virtual_address + stack->size;
 
     	Variable *freeSpace = new Variable();
     	freeSpace->name = "<FREE_SPACE>";
+
     	freeSpace->virtual_address = 0;
     	freeSpace->size = _max_size - getProcess()->process_virtual_address;
 		getProcess()->variables.push_back(freeSpace);
 
-		//Create page table ***
+		// ** create the page table **
+        int numberOfPages = ( textSize + dataSize + max ) / ( pageTable->pageSize() );
+
+        for(int i = 0; i < numberOfPages; i++) 
+        {
+            pageTable->addEntry(getProcess()->pid, i);
+        }
 		
 	}
 
