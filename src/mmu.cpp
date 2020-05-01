@@ -151,7 +151,7 @@ void Mmu::allocate( int pid, std::string name, std::string type, uint32_t quanti
 }
 
 
-void Mmu::set( ){
+void Mmu::set( int pid, std::string name, std::vector<std::string>* args ){
 
 }
 
@@ -174,9 +174,16 @@ void Mmu::free(int pid, std::string name){
     free->virtual_address = prev->virtual_address;
     free->size = prev->size;
     combineFrees( pid );
+    
+    // check if need free something from page? 
 }
 
 
+
+/*
+ * Combines any free space variables that are next
+ * to each other within a process. 
+ */
 void Mmu::combineFrees(int pid ){
 
     Process* p = getProcess( pid ); 
@@ -210,6 +217,9 @@ void Mmu::combineFrees(int pid ){
     }
 
 }
+
+
+
 
 void Mmu::print()
 {

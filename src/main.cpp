@@ -72,6 +72,9 @@ int main(int argc, char **argv)
 
         //error checking
         if(args.size() == 0);
+        else if( args[0] == "exit"){
+            exit(0);
+        }
         else if (args[0] == "create")
         {
             if(args.size() > 3)
@@ -112,6 +115,16 @@ int main(int argc, char **argv)
             {
                 std::cout << "Error with command 'set': Not enough arguments" << std::endl;
             }
+
+            int pid = std::stoi(args[1]); 
+            std::string name = args[2];  
+            std::vector<std::string> values; 
+
+            for(int i = 3; i < args.size(); i++ ){
+                args[i] = values[i]; 
+            }
+            mmu->set(pid, name, &args);
+
         }
         else if (args[0] == "free")
         {
@@ -123,6 +136,10 @@ int main(int argc, char **argv)
             {
                 std::cout << "Error with command 'free': Not enough arguments" << std::endl;
             }
+            
+            int pid = std::stoi(args[1]); 
+            std::string name = args[2];  
+            mmu->free(pid, name ); 
         }
         else if (args[0] == "terminate")
         {
@@ -150,7 +167,6 @@ int main(int argc, char **argv)
                 page_table->print();
             }
 
-
         }
         else
         {
@@ -161,7 +177,6 @@ int main(int argc, char **argv)
         std::cout << "> ";
         std::getline (std::cin, command);
     }
-
 
     return 0;
 }

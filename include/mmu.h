@@ -37,7 +37,7 @@ public:
     uint32_t createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *pageTable);
     void allocate( int pid, std::string name, std::string type, uint32_t quantity );   
     void print();
-    void set(); 
+    void set( int pid, std::string name, std::vector<std::string>* args ){
     void free(int pid, std::string name); 
 
 };
