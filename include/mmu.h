@@ -24,6 +24,7 @@ private:
     uint32_t _next_pid;
     int _max_size;
     std::vector<Process*> _processes;
+    void combineFrees(int pid);
 
 public:
     Mmu(int memory_size);
@@ -37,6 +38,10 @@ public:
     void allocate( int pid, std::string name, std::string type, uint32_t quantity );   
     void print();
     void set(); 
+    void free(int pid, std::string name); 
+
 };
+
+
 
 #endif // __MMU_H_

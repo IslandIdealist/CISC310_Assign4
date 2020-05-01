@@ -30,13 +30,15 @@ uint32_t Mmu::createProcess()
 
 Process* Mmu::getProcess( uint32_t pid )
 {
+    Process* p; 
     std::vector<Process*> vec = getProcessesVector();
     for( int i = 0; i < vec.size(); i++){
-       Process* p = vec[i];
+        p = vec[i];
        if( p->pid == pid ){
            return p; 
        }
    }
+    return p; 
 }
 
 Process* Mmu::getFirstProcess() 
@@ -48,7 +50,6 @@ std::vector<Process*> Mmu::getProcessesVector()
 {
     return _processes;
 }
-
 
 uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *pageTable)
 {
@@ -146,6 +147,7 @@ void Mmu::allocate( int pid, std::string name, std::string type, uint32_t quanti
         getProcess(pid)->process_virtual_address = address + var->size; 
     }
 	getProcess(pid)->variables.push_back(var);
+    printf("%d", var->virtual_address); 
 }
 
 
@@ -153,6 +155,61 @@ void Mmu::set( ){
 
 }
 
+
+void Mmu::free(int pid, std::string name){
+
+
+    //find the variable to free. 
+    Process* p = getProcess( pid ); 
+    std::vector<Variable*> vars = p->variables; 
+    Variable* prev; 
+    for( int i = 0; i < vars.size(); i++){
+       if( vars[i]->name.compare(name) == 0){
+           prev = vars[i]; 
+       }
+    }
+    
+    Variable* free = new Variable(); 
+    free->name = "<FREE_SPACE>";
+    free->virtual_address = prev->virtual_address;
+    free->size = prev->size;
+    combineFrees( pid );
+}
+
+
+void Mmu::combineFrees(int pid ){
+
+    Process* p = getProcess( pid ); 
+    std::vector<Variable*> vars = p->variables; 
+    for( int i = 0; i < vars.size(); i++){
+       if( vars[i]->name.compare("<FREE_SPACE>") == 0){
+          if( vars[i+1]->name.compare("<FREE_SPACE>") == 0 ){
+              
+              Variable* prev = vars[i]; 
+              Variable* curr = vars[i+1]; 
+
+              Variable* v = new Variable(); 
+              v->name = "<FREE_SPACE>";
+              v->virtual_address = prev->virtual_address;
+              v->size = prev->size + curr->size ;
+
+              //erase the curr variable
+              p->variables.erase( vars.begin() + i + 1 );
+              //set new free variable. 
+              p->variables[i] = v; 
+
+              //recurse until all combinable frees are combined. 
+              return combineFrees( pid );
+          }
+          else{
+              //increment extra 1. 
+              i++; 
+              continue; 
+          }
+       }
+    }
+
+}
 
 void Mmu::print()
 {
