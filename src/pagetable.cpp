@@ -5,6 +5,7 @@
 PageTable::PageTable(int page_size)
 {
     _page_size = page_size;
+    frameTableVector = new std::vector<bool>();
 }
 
 PageTable::~PageTable()
@@ -14,12 +15,41 @@ PageTable::~PageTable()
 void PageTable::addEntry(uint32_t pid, int page_number)
 {
     // Combination of pid and page number act as the key to look up frame number
-    std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
+    std::string entry = std::to_string( pid ) + "|" + std::to_string( page_number) ;
 
     // Find free frame
     // TODO: implement this!
-    int frame = 0; 
-    _table[entry] = frame;
+    int frameNumber = 0;
+    bool foundFreeSpace = false;
+
+    for(int i = 0; i < frameTableVector->size(); i++)
+    {
+        if( frameTableVector->at(i) == false )
+        {
+            foundFreeSpace = true;
+            frameNumber = i;
+            break;
+        }
+    }
+
+
+    //something is fucked here. I think I have the right idea tho?
+
+
+   // std::cout << "frameNumber: " << frameNumber << std::endl;
+   // std::cout << "frameTableVectorSize: " << frameTableVector->size() << std::endl;
+    
+    if( foundFreeSpace )
+    {
+        frameTableVector->push_back(true);
+        frameNumber = frameTableVector->size();
+    }
+    else
+    {
+        frameTableVector->push_back(true);
+    }
+
+    _table[entry] = frameNumber;
 }
 
 int PageTable::getPhysicalAddress(uint32_t pid, int virtual_address)

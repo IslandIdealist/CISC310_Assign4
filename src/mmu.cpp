@@ -55,6 +55,7 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
 {
     int p, v;
     int pageNumber;
+    int max = 65536;
 	bool found = false;
     Variable *var = new Variable();
 	uint32_t process = createProcess();
@@ -88,8 +89,8 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
 
 		Variable *globals = new Variable();
 		globals->name = "<GLOBALS>";
-    	globals->virtual_address = getFirstProcess()->process_virtual_address;
-    	globals->size = dataSize;
+    globals->virtual_address = getFirstProcess()->process_virtual_address;
+    globals->size = dataSize;
 		getFirstProcess()->variables.push_back(globals);
 
 		getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + globals->size;
@@ -97,19 +98,27 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
 
 		Variable *stack = new Variable();
 		stack->name = "<STACK>";
-    	stack->virtual_address = getFirstProcess()->process_virtual_address;
-    	stack->size = 65536;
+    stack->virtual_address = getFirstProcess()->process_virtual_address;
+    stack->size = 65536;
 		getFirstProcess()->variables.push_back(stack);
 
 		getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + stack->size;
 
-    	Variable *freeSpace = new Variable();
-    	freeSpace->name = "<FREE_SPACE>";
-    	freeSpace->virtual_address = 0;
-    	freeSpace->size = _max_size - getFirstProcess()->process_virtual_address;
+    Variable *freeSpace = new Variable();
+    freeSpace->name = "<FREE_SPACE>";
+
+    freeSpace->virtual_address = 0;
+    freeSpace->size = _max_size - getFirstProcess()->process_virtual_address;
 		getFirstProcess()->variables.push_back(freeSpace);
 
-		//Create page table ***
+    // ** create the page table **
+    int numberOfPages = ( textSize + dataSize + max ) / ( pageTable->pageSize() );
+
+    for(int i = 0; i < numberOfPages; i++) 
+    {
+        pageTable->addEntry(getProcess()->pid, i);
+    }
+		
 	}
 
 	return process;
