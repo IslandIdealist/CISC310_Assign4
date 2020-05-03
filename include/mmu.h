@@ -14,6 +14,7 @@ typedef struct Variable {
 
 typedef struct Process {
     uint32_t pid;
+    int page;
     int process_virtual_address;
     
     std::vector<Variable*> variables;

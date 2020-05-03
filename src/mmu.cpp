@@ -16,6 +16,7 @@ uint32_t Mmu::createProcess()
 {
     Process *proc = new Process();
     proc->pid = _next_pid;
+    proc->page = 0;
 
     Variable *var = new Variable();
     var->name = "<FREE_SPACE>";
@@ -74,51 +75,60 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
         }
     }
 
-    //testing
-    /*
-    std::cout << "Before!" << std::endl;
-    std::cout << getProcessesVector().size() << std::endl;
-    std::cout << "After!" << std::endl;*/
-
     if( found )
 	{
 
         var->name = "<TEXT>";
         var->virtual_address = getFirstProcess()->process_virtual_address;
         var->size = textSize;
-
         getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + textSize;
+
+        pageNumber = getFirstProcess()->process_virtual_address / pageTable->pageSize();
+        for(int i = getFirstProcess()->page; i < pageNumber; i++) 
+        {
+            pageTable->addEntry(getFirstProcess()->pid, i);
+            getFirstProcess()->page++;
+        }
+
 
         Variable *globals = new Variable();
         globals->name = "<GLOBALS>";
         globals->virtual_address = getFirstProcess()->process_virtual_address;
         globals->size = dataSize;
         getFirstProcess()->variables.push_back(globals);
-
         getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + globals->size;
+
+        pageNumber = getFirstProcess()->process_virtual_address / pageTable->pageSize();
+        for(int i = getFirstProcess()->page; i < pageNumber; i++) 
+        {
+            pageTable->addEntry(getFirstProcess()->pid, i);
+            getFirstProcess()->page++;
+        }
+
 
         Variable *stack = new Variable();
         stack->name = "<STACK>";
         stack->virtual_address = getFirstProcess()->process_virtual_address;
         stack->size = 65536;
         getFirstProcess()->variables.push_back(stack);
-
         getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + stack->size;
+
+        pageNumber = getFirstProcess()->process_virtual_address / pageTable->pageSize();
+        for(int i = getFirstProcess()->page; i < pageNumber; i++) 
+        {
+            pageTable->addEntry(getFirstProcess()->pid, i);
+            getFirstProcess()->page++;
+        }
+
+
+        _max_size = _max_size - getFirstProcess()->process_virtual_address;
 
         Variable *freeSpace = new Variable();
         freeSpace->name = "<FREE_SPACE>";
-
         freeSpace->virtual_address = 0;
         freeSpace->size = _max_size - getFirstProcess()->process_virtual_address;
         getFirstProcess()->variables.push_back(freeSpace);
-
-        // ** create the page table **
-        int numberOfPages = ( textSize + dataSize + max ) / ( pageTable->pageSize() );
-
-        for(int i = 0; i < numberOfPages; i++) 
-        {
-            pageTable->addEntry(getFirstProcess()->pid, i);
-        }
+        
     }
 
 	return process;
