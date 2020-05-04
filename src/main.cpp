@@ -83,7 +83,7 @@ int main(int argc, char **argv)
             }
             else
             {
-                mmu->createNewProcess( std::stoi(args[1]), std::stoi(args[2]), page_table );
+                std::cout << mmu->createNewProcess( std::stoi(args[1]), std::stoi(args[2]), page_table ) << std::endl;
             }
 
         }
