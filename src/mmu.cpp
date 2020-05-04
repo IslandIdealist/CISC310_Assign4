@@ -128,7 +128,7 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
 	return process;
 }
 
-void Mmu::allocate( int pid, std::string name, std::string type, uint32_t quantity)
+int Mmu::allocate( int pid, std::string name, std::string type, uint32_t quantity)
 {
 
     //allocate space needed for any specificed variables.
@@ -176,6 +176,8 @@ void Mmu::allocate( int pid, std::string name, std::string type, uint32_t quanti
 	proc->variables.push_back(var);
     proc->variables.at(index)->virtual_address += var->size;
 
+    return address;
+
 }
 
 
@@ -184,6 +186,34 @@ void Mmu::set( int pid, std::string name, std::vector<std::string>* args )
 
 }
 
+int Mmu::terminate(uint32_t pid, PageTable *pageTable)
+{
+        int index = 0;
+	    int pageNumber = 0;
+        std::string name;
+
+        for( int i = 0; i < getProcessesVector().size(); i++ )
+        {
+            if ( getProcessesVector()[i]->pid == pid )
+            {
+                index = i;
+                break;
+            }
+        
+        }
+
+	    for(int i = 0; i < getProcessesVector()[index]->variables.size(); i++)
+	    {
+			    getProcessesVector()[index]->variables[i]->name = "<FREE_SPACE>";
+			    getProcessesVector()[index]->variables[i]->virtual_address = 0;
+			    pageTable->remove( pid, pageNumber );
+	    }
+
+	    getProcessesVector()[index]->variables.clear();
+	    //getProcessesVector().erase(getProcessesVector().begin() + index);
+	
+	    return 0;
+}
 
 void Mmu::free(int pid, std::string name)
 {

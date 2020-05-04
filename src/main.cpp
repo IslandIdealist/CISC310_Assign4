@@ -102,7 +102,7 @@ int main(int argc, char **argv)
             std::string name = args[2];  
             std::string type = args[3]; 
             int quantity = std::stoi( args[4]);
-            mmu->allocate(pid, name, type, quantity );      
+            std::cout << mmu->allocate(pid, name, type, quantity ) << std::endl;      
 
         }
         else if (args[0] == "set")
@@ -142,6 +142,11 @@ int main(int argc, char **argv)
             if(args.size() == 1)
             {
                 std::cout << "Error with command 'terminate': Not enough arguments" << std::endl;
+            }
+            else
+            {
+                mmu->terminate( std::stoi(args[1]), page_table);
+
             }
         }
         else if (args[0] == "print")

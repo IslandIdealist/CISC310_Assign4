@@ -38,7 +38,8 @@ public:
     std::vector<Process*> getProcessesVector();
     uint32_t createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *pageTable);
     Process* getNextProcess();
-    void allocate( int pid, std::string name, std::string type, uint32_t quantity );   
+    int allocate( int pid, std::string name, std::string type, uint32_t quantity );
+    int terminate(uint32_t pid, PageTable *pageTable);
     void print();
     void set( int pid, std::string name, std::vector<std::string>* args );
     void free(int pid, std::string name); 
