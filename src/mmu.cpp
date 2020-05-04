@@ -6,6 +6,7 @@ Mmu::Mmu(int memory_size)
 {
     _next_pid = 1024;
     _max_size = memory_size;
+    _index = 0;
 }
 
 Mmu::~Mmu()
@@ -34,18 +35,29 @@ Process* Mmu::getProcess( uint32_t pid )
 {
     Process* p; 
     std::vector<Process*> vec = getProcessesVector();
-    for( int i = 0; i < vec.size(); i++){
-        p = vec[i];
-       if( p->pid == pid ){
+
+    for( int i = 0; i < vec.size(); i++ )
+    {
+       p = vec[i];
+
+       if( p->pid == pid )
+       {
            return p; 
        }
-   }
-    return p; 
+    }
+
+    return NULL; 
 }
 
 Process* Mmu::getFirstProcess() 
 {
     return _processes.front();
+}
+
+Process* Mmu::getNextProcess()
+{ 
+    return _processes[_index];
+    _index++;
 }
 
 std::vector<Process*> Mmu::getProcessesVector()
@@ -55,11 +67,15 @@ std::vector<Process*> Mmu::getProcessesVector()
 
 uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *pageTable)
 {
+
     int p, v;
     int pageNumber;
     int max = 65536;
 	bool found = false;
-    Variable *var = new Variable();
+    Variable *text = new Variable();
+    Variable *globals = new Variable();
+    Variable *stack = new Variable();
+    Variable *freeSpace = new Variable();
 	uint32_t process = createProcess();
 
     for( p = 0; p < getProcessesVector().size(); p++ )
@@ -68,66 +84,44 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
         {
             if( getProcessesVector().at(p)->variables.at(v)->name.compare("<FREE_SPACE>") == 0 )
             {
-                var = getProcessesVector().at(p)->variables.at(v);
+                text = getProcessesVector().at(p)->variables.at(v);
                 found = true;
                 break;
             }
         }
     }
 
+    Process *proc = getProcess(process);
+
     if( found )
 	{
 
-        var->name = "<TEXT>";
-        var->virtual_address = getFirstProcess()->process_virtual_address;
-        var->size = textSize;
-        getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + textSize;
+        text->name = "<TEXT>";
+        text->size = textSize;
 
-        pageNumber = getFirstProcess()->process_virtual_address / pageTable->pageSize();
-        for(int i = getFirstProcess()->page; i < pageNumber; i++) 
-        {
-            pageTable->addEntry(getFirstProcess()->pid, i);
-            getFirstProcess()->page++;
-        }
-
-
-        Variable *globals = new Variable();
         globals->name = "<GLOBALS>";
-        globals->virtual_address = getFirstProcess()->process_virtual_address;
+        globals->virtual_address = text->size;
         globals->size = dataSize;
-        getFirstProcess()->variables.push_back(globals);
-        getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + globals->size;
+        proc->variables.push_back(globals);
 
-        pageNumber = getFirstProcess()->process_virtual_address / pageTable->pageSize();
-        for(int i = getFirstProcess()->page; i < pageNumber; i++) 
-        {
-            pageTable->addEntry(getFirstProcess()->pid, i);
-            getFirstProcess()->page++;
-        }
-
-
-        Variable *stack = new Variable();
         stack->name = "<STACK>";
-        stack->virtual_address = getFirstProcess()->process_virtual_address;
+        stack->virtual_address = globals->size + text->size;
         stack->size = 65536;
-        getFirstProcess()->variables.push_back(stack);
-        getFirstProcess()->process_virtual_address = getFirstProcess()->process_virtual_address + stack->size;
+        proc->variables.push_back(stack);
 
-        pageNumber = getFirstProcess()->process_virtual_address / pageTable->pageSize();
-        for(int i = getFirstProcess()->page; i < pageNumber; i++) 
+        pageNumber = (globals->size + text->size + stack->size) / pageTable->pageSize();
+        for( int i = 0; i < pageNumber; i++ ) 
         {
-            pageTable->addEntry(getFirstProcess()->pid, i);
-            getFirstProcess()->page++;
+            pageTable->addEntry(proc->pid, i);
+            proc->page++;
         }
 
+        _max_size = _max_size - (globals->size + text->size + stack->size);
 
-        _max_size = _max_size - getFirstProcess()->process_virtual_address;
-
-        Variable *freeSpace = new Variable();
         freeSpace->name = "<FREE_SPACE>";
-        freeSpace->virtual_address = 0;
-        freeSpace->size = _max_size - getFirstProcess()->process_virtual_address;
-        getFirstProcess()->variables.push_back(freeSpace);
+        freeSpace->virtual_address = globals->size + text->size + stack->size;
+        freeSpace->size = _max_size - (globals->size + text->size + stack->size);
+        proc->variables.push_back(freeSpace);
         
     }
 
@@ -137,37 +131,51 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
 void Mmu::allocate( int pid, std::string name, std::string type, uint32_t quantity)
 {
 
-    //allocate space needed for any specificed variables. 
-    Variable *var = new Variable();
+    //allocate space needed for any specificed variables.
 
-    int address = getProcess(pid)->process_virtual_address;
+    Variable *var = new Variable();
+    Process *proc = getProcess(pid);
+    int index = 0;
+
+    for(int i = 0; i < proc->variables.size(); i++)
+    {
+        if(proc->variables.at(i)->name == "<FREE_SPACE>")
+        {
+            index = i;
+            break;
+        }
+    }
+
+    int address = proc->variables.at(index)->virtual_address;
         
-    if( type.compare("int") == 0 ){
+    if( type.compare("int") == 0 || type.compare("float") == 0)
+    {
         var->name = name;
         var->virtual_address = address; 
         var->size = 4 * quantity;
-        getProcess(pid)->process_virtual_address = address + var->size; 
     }
-    else if( type.compare("short") == 0 ){
+    else if( type.compare("short") == 0 )
+    {
         var->name = name;
         var->virtual_address = address; 
         var->size = 2 * quantity;
-        getProcess(pid)->process_virtual_address = address + var->size; 
     }
-    else if( type.compare( "char" ) == 0 ){
+    else if( type.compare( "char" ) == 0 )
+    {
         var->name = name;
         var->virtual_address = address; 
         var->size = 2;
-        getProcess(pid)->process_virtual_address = address + var->size; 
     }
-    else if( type.compare("long" ) == 0  || type.compare("double") == 0 ){
+    else if( type.compare("long" ) == 0  || type.compare("double") == 0 )
+    {
         var->name = name;
         var->virtual_address = address; 
         var->size = 8 * quantity;
-        getProcess(pid)->process_virtual_address = address + var->size; 
     }
-	getProcess(pid)->variables.push_back(var);
-    printf("%d", var->virtual_address); 
+
+	proc->variables.push_back(var);
+    proc->variables.at(index)->virtual_address += var->size;
+
 }
 
 
@@ -195,7 +203,6 @@ void Mmu::free(int pid, std::string name)
     free->size = prev->size;
     combineFrees( pid );
     
-    // check if need free something from page?
 }
 
 
@@ -246,18 +253,29 @@ void Mmu::print()
     std::cout << " PID  | Variable Name | Virtual Addr | Size" << std::endl;
     std::cout << "------+---------------+--------------+------------" << std::endl;
 
-    for (i = 0; i < _processes.size(); i++)
+    for (i = 0; i < getProcessesVector().size(); i++)
     {
-        for (j = 0; j < _processes[i]->variables.size(); j++)
+        for (j = 0; j < getProcessesVector()[i]->variables.size(); j++)
         {
-            if( _processes[i]->variables[j]->name.compare("<FREE_SPACE>") == 0 )
-		    {
-			    break;
-		    }
+            if( getProcessesVector()[i]->variables[j]->name != "<FREE_SPACE>" )
+            {   
+                std::cout << ' ' << getProcessesVector()[i]->pid << " |";
+                std::cout << ' ' << getProcessesVector()[i]->variables[j]->name;
 
-	        std::cout << _processes[i]->pid << std::string( 2, ' ') << "| " << _processes[i]->variables[j]->name << std::string( 14 - _processes[i]->variables[j]->name.length(), ' ') << "| " << _processes[i]->variables[j]->virtual_address << std::string( 13 - std::to_string(_processes[i]->variables[j]->virtual_address).length(), ' ') << "| " << std::string(11 - std::to_string(_processes[i]->variables[j]->size).length(), ' ') << _processes[i]->variables[j]->size << std:: endl;
+                for( int k = getProcessesVector()[i]->variables[j]->name.length(); k<14; k++ )
+                {
+                    std::cout << ' ';
+                }
 
+                printf( "|   0x%08X |", getProcessesVector()[i]->variables[j]->virtual_address );
+
+                for( int k = std::to_string( getProcessesVector()[i]->variables[j]->size ).length(); k < 11; k++ )
+                {
+                    std::cout << ' ';
+                }
+
+                std::cout << getProcessesVector()[i]->variables[j]->size << std::endl;
+            }
         }
-
     }
 }

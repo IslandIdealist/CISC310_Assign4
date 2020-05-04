@@ -11,7 +11,7 @@ private:
     int _page_size;
     int _page_offset_bit;
     std::map<std::string, int> _table;
-    std::vector<bool> *frameTableVector;
+    bool* _frameTableArray;
 
 public:
     PageTable(int page_size);

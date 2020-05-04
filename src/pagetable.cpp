@@ -5,7 +5,7 @@
 PageTable::PageTable(int page_size)
 {
     _page_size = page_size;
-    frameTableVector = new std::vector<bool>();
+    _frameTableArray = new bool[67108864/_page_size];    
 }
 
 PageTable::~PageTable()
@@ -22,34 +22,26 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     int frameNumber = 0;
     bool foundFreeSpace = false;
 
-    for(int i = 0; i < frameTableVector->size(); i++)
+    for(int i = 0; i < 67108864/_page_size; i++)
     {
-        if( frameTableVector->at(i) == false )
+        if( _frameTableArray[i] == false )
         {
             foundFreeSpace = true;
             frameNumber = i;
             break;
         }
     }
-
-
-    //something is fucked here. I think I have the right idea tho?
-
-
-   // std::cout << "frameNumber: " << frameNumber << std::endl;
-   // std::cout << "frameTableVectorSize: " << frameTableVector->size() << std::endl;
     
     if( foundFreeSpace )
     {
-        frameTableVector->push_back( true );
-        frameNumber = frameTableVector->size();
+        _frameTableArray[frameNumber] = true ;
+        _table[entry] = frameNumber;
     }
     else
     {
-        frameTableVector->push_back( true );
+        std::cout << "error: memory is full!" << std::endl;
     }
-
-    _table[entry] = frameNumber;
+    
 }
 
 int PageTable::getPhysicalAddress(uint32_t pid, int virtual_address)
@@ -58,9 +50,8 @@ int PageTable::getPhysicalAddress(uint32_t pid, int virtual_address)
 
     int page_number = virtual_address >> _page_offset_bit;
     int page_offset = virtual_address & ( (int)pow(2, _page_offset_bit) - 1 );
-
-    std::cout << "Page number: " << page_number << std::endl;
-	std::cout << "Page offset: " << page_offset << std::endl;
+    //page_number = virtual_address / page_size
+    //page_offset = virtual_address % page_size
 
     // Combination of pid and page number act as the key to look up frame number
     std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
@@ -69,7 +60,7 @@ int PageTable::getPhysicalAddress(uint32_t pid, int virtual_address)
     int address = -1;
     if (_table.count(entry) > 0)
     {
-        address = _table[entry] * _page_size + page_offset;
+        address = _table.find(entry)->second * _page_size + page_offset;
     }
 
     return address;

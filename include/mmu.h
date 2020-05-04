@@ -24,6 +24,7 @@ class Mmu {
 private:
     uint32_t _next_pid;
     int _max_size;
+    int _index;
     std::vector<Process*> _processes;
     void combineFrees(int pid);
 
@@ -36,6 +37,7 @@ public:
     Process* getFirstProcess();
     std::vector<Process*> getProcessesVector();
     uint32_t createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *pageTable);
+    Process* getNextProcess();
     void allocate( int pid, std::string name, std::string type, uint32_t quantity );   
     void print();
     void set( int pid, std::string name, std::vector<std::string>* args );
