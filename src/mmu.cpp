@@ -260,13 +260,13 @@ void Mmu::combineFrees(int pid )
     }
 }
 
-Variable* Mmu::getVariable(int pid,  std::string name){
+Variable* Mmu::getVariable(int pid,  std::string var){
 
     Process* p = getProcess(pid); 
     for(int j = 0; j < p->variables.size(); j++)
     {
-        std::string name = p->variables[j]->name;  
-        if( name.compare(name) == 0 ){
+        std::string name = p->variables.at(j)->name;  
+        if( var.compare(name) == 0 ){
             return p->variables[j]; 
         }
     }

@@ -136,10 +136,11 @@ int main(int argc, char **argv)
                     memory[physicalAddress + 1 + offset] = lower; 
                 }
                 else if( var->type.compare("int") == 0){
+                    printf("filling in memory");
                     int value = std::stoi( args[i] ); 
 
                     for( int i = 4; i > 0; i-- ){
-                        memory[physicalAddress + i ] = value >> 8 * i;  
+                        memory[physicalAddress + i ] = (value >> 8 * i) & 0xFF;  
                     }
                 }
             }
@@ -228,7 +229,7 @@ int main(int argc, char **argv)
                         //OR each byte into the resulting int. 
                         for( int j = 0; j < 4; j++ ){
                             uint8_t byte = memory[ physicalAddress + i ]; 
-                            result = result || (byte << i );  
+                            result = result | (byte << i );  
                         }
                         printf("%d, ", result); 
                     }
