@@ -95,7 +95,6 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
 
     if( found )
 	{
-
         text->name = "<TEXT>";
         text->size = textSize;
 
@@ -130,9 +129,7 @@ uint32_t Mmu::createNewProcess(uint32_t textSize, uint32_t dataSize, PageTable *
 
 int Mmu::allocate( int pid, std::string name, std::string type, uint32_t quantity)
 {
-
     //allocate space needed for any specificed variables.
-
     Variable *var = new Variable();
     Process *proc = getProcess(pid);
     int index = 0;
@@ -145,73 +142,62 @@ int Mmu::allocate( int pid, std::string name, std::string type, uint32_t quantit
             break;
         }
     }
-
     int address = proc->variables.at(index)->virtual_address;
+    var->name = name;
+    var->virtual_address = address; 
         
-    if( type.compare("int") == 0 || type.compare("float") == 0)
+    if( type.compare("int") == 0 )
     {
-        var->name = name;
-        var->virtual_address = address; 
         var->size = 4 * quantity;
+        var->type = std::string("int"); 
+    }
+    else if( type.compare("float") == 0 )
+    {
+        var->size = 4 * quantity;  
+        var->type = std::string("float"); 
     }
     else if( type.compare("short") == 0 )
     {
-        var->name = name;
-        var->virtual_address = address; 
         var->size = 2 * quantity;
+        var->type = std::string("short"); 
     }
     else if( type.compare( "char" ) == 0 )
     {
-        var->name = name;
-        var->virtual_address = address; 
-        var->size = 2;
+        var->size = 1 * quantity;
+        var->type = "char"; 
     }
-    else if( type.compare("long" ) == 0  || type.compare("double") == 0 )
+    else if( type.compare("long" ) == 0  )
     {
-        var->name = name;
-        var->virtual_address = address; 
         var->size = 8 * quantity;
+        var->type = "long"; 
+    }
+    else if( type.compare("double") == 0 )
+    {
+        var->size = 8 * quantity;
+        var->type = "double"; 
     }
 
 	proc->variables.push_back(var);
     proc->variables.at(index)->virtual_address += var->size;
-
     return address;
-
 }
 
-
-void Mmu::set( int pid, std::string name, std::vector<std::string>* args )
-{
-
-}
 
 int Mmu::terminate(uint32_t pid, PageTable *pageTable)
 {
         int index = 0;
 	    int pageNumber = 0;
         std::string name;
+        Process* p = getProcess( pid ); 
 
-        for( int i = 0; i < getProcessesVector().size(); i++ )
-        {
-            if ( getProcessesVector()[i]->pid == pid )
-            {
-                index = i;
-                break;
-            }
-        
-        }
-
-	    for(int i = 0; i < getProcessesVector()[index]->variables.size(); i++)
+	    for(int i = 0; i < p->variables.size(); i++)
 	    {
-			    getProcessesVector()[index]->variables[i]->name = "<FREE_SPACE>";
-			    getProcessesVector()[index]->variables[i]->virtual_address = 0;
-			    pageTable->remove( pid, pageNumber );
+            std::string name = p->variables[i]->name;  
+            free( pid, name );
+            pageTable->remove( pid, pageNumber );
 	    }
 
-	    getProcessesVector()[index]->variables.clear();
-	    //getProcessesVector().erase(getProcessesVector().begin() + index);
-	
+	    getProcessesVector().erase(getProcessesVector().begin() + index);
 	    return 0;
 }
 
@@ -232,7 +218,6 @@ void Mmu::free(int pid, std::string name)
     free->virtual_address = prev->virtual_address;
     free->size = prev->size;
     combineFrees( pid );
-    
 }
 
 
@@ -275,6 +260,19 @@ void Mmu::combineFrees(int pid )
     }
 }
 
+Variable* Mmu::getVariable(int pid,  std::string name){
+
+    Process* p = getProcess(pid); 
+    for(int j = 0; j < p->variables.size(); j++)
+    {
+        std::string name = p->variables[j]->name;  
+        if( name.compare(name) == 0 ){
+            return p->variables[j]; 
+        }
+    }
+    return NULL; 
+}
+
 
 void Mmu::print()
 {
@@ -304,7 +302,7 @@ void Mmu::print()
                     std::cout << ' ';
                 }
 
-                std::cout << getProcessesVector()[i]->variables[j]->size << std::endl;
+                std::cout << getProcessesVector()[i]->variables[j]->size * 8 << std::endl;
             }
         }
     }

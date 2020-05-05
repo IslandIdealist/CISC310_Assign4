@@ -10,6 +10,7 @@ typedef struct Variable {
     std::string name;
     int virtual_address;
     int size;
+    std::string type; 
 } Variable;
 
 typedef struct Process {
@@ -43,7 +44,8 @@ public:
     void print();
     void set( int pid, std::string name, std::vector<std::string>* args );
     void free(int pid, std::string name); 
-
+    Variable* getVariable(int pid, std::string name ); 
+    int getPid( std::string name ); 
 };
 
 

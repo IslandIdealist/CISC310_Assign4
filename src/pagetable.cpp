@@ -41,8 +41,8 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     {
         std::cout << "error: memory is full!" << std::endl;
     }
-    
 }
+
 
 int PageTable::getPhysicalAddress(uint32_t pid, int virtual_address)
 {

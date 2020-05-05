@@ -114,12 +114,37 @@ int main(int argc, char **argv)
 
             int pid = std::stoi(args[1]); 
             std::string name = args[2];  
-            std::vector<std::string> values; 
 
-            for(int i = 3; i < args.size(); i++ ){
-                args[i] = values[i]; 
+            Variable* var = mmu->getVariable(pid, name); 
+            if( var == NULL ){
+                printf("Failed to set get the variable to set"); 
+                return 1;  
             }
-            mmu->set(pid, name, &args);
+            int physicalAddress = page_table->getPhysicalAddress( pid, var->virtual_address );  
+            int offset = stoi(args[3]);
+
+            for(int i = 4; i < args.size(); i++ ){
+
+                if( var->type.compare("char") == 0 ){
+                    memory[physicalAddress + offset] = args[i].c_str()[0]; 
+                }
+                else if( var->type.compare("short") == 0 ){
+                    int value = std::stoi(args[1]); 
+                    uint8_t lower = value & 0xFF;  
+                    uint8_t upper = value >> 8;  
+                    memory[physicalAddress + offset] = upper; 
+                    memory[physicalAddress + 1 + offset] = lower; 
+                }
+                else if( var->type.compare("int") == 0){
+                    int value = std::stoi( args[i] ); 
+
+                    for( int i = 4; i > 0; i-- ){
+                        memory[physicalAddress + i ] = value >> 8 * i;  
+                    }
+                }
+            }
+
+
 
         }
         else if (args[0] == "free")
@@ -166,6 +191,48 @@ int main(int argc, char **argv)
             else if(args[1] == "page")
             {
                 page_table->print();
+            }
+            else if(args[1] == "processes"){
+                //TODO: 
+            }
+            else {
+                int pid = std::stoi(args[1].substr(0,4)); 
+                std::string name = args[1].substr(5); 
+
+                Variable* var = mmu->getVariable( pid, name ); 
+                int vaddress = var->virtual_address; 
+                int physicalAddress = page_table->getPhysicalAddress( pid, vaddress );  
+                std::string type = var->type; 
+                printf("type: %s\n", type.c_str());
+                printf("name: %s\n", name.c_str()); 
+
+                if( type.compare("char") == 0 ){
+                    for(  int i = 0; i < var->size; i++ ){
+                        printf("%c, ", memory[ physicalAddress + i ] );  
+                    }
+                }
+                else if( type.compare("short") == 0 ){
+                    
+                    for( int i = 0; i < var->size / 2; i++ ){
+                        uint8_t upper = memory[ physicalAddress ]; 
+                        uint8_t lower = memory[ physicalAddress + 1 ]; 
+                        short var = lower || (upper << 8 ); 
+                        printf("%d, ", var); 
+                    }
+
+                }
+                else if( type.compare( "int" ) == 0 ){
+                    int result = 0; 
+                    printf("printing int: %d\n", memory[physicalAddress]); 
+                    for( int i = 0; i < var->size / 4; i++ ){
+                        //OR each byte into the resulting int. 
+                        for( int j = 0; j < 4; j++ ){
+                            uint8_t byte = memory[ physicalAddress + i ]; 
+                            result = result || (byte << i );  
+                        }
+                        printf("%d, ", result); 
+                    }
+                }
             }
 
         }
